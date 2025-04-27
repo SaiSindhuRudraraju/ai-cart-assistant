@@ -13,7 +13,7 @@ let messages = [
   {
     role: 'system',
     content:
-    `
+      `
       You are a shopping assistant. Follow this structure strictly:
 
       Products List:
@@ -107,5 +107,5 @@ app.post("/chat", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log("Server listening on http://localhost:${PORT}");
 });
