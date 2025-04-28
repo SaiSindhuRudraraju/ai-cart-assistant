@@ -7,31 +7,27 @@ function App() {
 
   const handleSend = async () => {
     if (!query.trim()) return;
-
+  
     const userMessage = query.trim();
-    setChat([...chat, { sender: 'You', text: userMessage }]);
+    setChat(prevChat => [...prevChat, { sender: 'You', text: userMessage }]);
     setQuery('');
-
+  
     try {
-      const res = await axios.post('http://localhost:5000/chat', {
-        message: userMessage
-      });
-
-      const aiMessage = res.data.message;
-
-      // Attempt to parse if it's a clean product array
-      let parsedJson = null;
-      try {
-        parsedJson = JSON.parse(aiMessage);
-      } catch (e) {
-        // not JSON, continue
+      const res = await axios.post('http://localhost:5000/chat', { message: userMessage });
+      const aiMessage = res.data;
+  
+      if (aiMessage.output) {  // <-- check for output key
+        setChat(prevChat => [...prevChat, { sender: 'AI', text: aiMessage.output }]);
+      } else if (aiMessage.observation) {  // <-- check if observation exists
+        const formattedJson = JSON.stringify(aiMessage.observation, null, 2);
+        setChat(prevChat => [...prevChat, { sender: 'AI', text: formattedJson }]);
+      } else {
+        setChat(prevChat => [...prevChat, { sender: 'AI', text: 'Action processed.' }]);
       }
-
-      setChat(prev => [...prev, { sender: 'AI', text: parsedJson || aiMessage }]);
     } catch (err) {
-      setChat(prev => [...prev, { sender: 'AI', text: 'Error: Could not connect to server.' }]);
+      setChat(prevChat => [...prevChat, { sender: 'AI', text: 'Error: Could not connect to server.' }]);
     }
-  };
+  };  
 
   const renderMessage = (msg, index) => {
     if (Array.isArray(msg.text)) {
@@ -59,7 +55,7 @@ function App() {
         </div>
       );
     }
-  
+
     return (
       <div key={index} style={{ marginBottom: '10px' }}>
         <strong>{msg.sender}:</strong>{' '}
@@ -71,7 +67,7 @@ function App() {
         ))}
       </div>
     );
-  };  
+  };
 
   return (
     <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
